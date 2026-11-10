@@ -77,10 +77,13 @@ def _parser():
     ekspor = sub.add_parser(
         "ekspor", help="Ekspor data ke CSV (untuk spreadsheet).")
     ekspor.add_argument("--jenis", required=True,
-                        choices=["tagihan", "pembayaran"],
+                        choices=["tagihan", "pembayaran", "laporan"],
                         help="Data yang diekspor.")
     ekspor.add_argument("--keluar", default=None,
                         help="File CSV tujuan (bawaan: tampilkan di layar).")
+    ekspor.add_argument("--bulan", default=None,
+                        help="Bulan YYYY-MM untuk jenis laporan "
+                             "(bawaan: bulan berjalan).")
     return p
 
 
@@ -178,8 +181,18 @@ def main(argv=None):
         elif args.perintah == "ekspor":
             if args.jenis == "tagihan":
                 teks = export_mod.ekspor_csv_tagihan(data)
-            else:
+            elif args.jenis == "pembayaran":
                 teks = export_mod.ekspor_csv_pembayaran(data)
+            else:
+                from datetime import date as _date
+                bulan = args.bulan or _date.today().strftime("%Y-%m")
+                try:
+                    datetime.strptime(bulan, "%Y-%m")
+                except ValueError:
+                    raise model.BagiRataError(
+                        f"Bulan '{bulan}' tidak valid "
+                        "(pakai format YYYY-MM).")
+                teks = export_mod.ekspor_csv_laporan(data, bulan)
             if args.keluar:
                 with open(args.keluar, "w", encoding="utf-8",
                           newline="") as f:

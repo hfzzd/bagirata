@@ -38,3 +38,23 @@ def ekspor_csv_pembayaran(data):
     for i, p in enumerate(data["pembayaran"], 1):
         baris.append([i, p["dari"], p["ke"], p["jumlah"], p["tanggal"]])
     return _ke_csv(baris)
+
+
+def ekspor_csv_laporan(data, bulan):
+    """Kembalikan teks CSV berisi laporan bulanan per anggota.
+
+    Kolom: anggota, dibayar (membayar tagihan), ditanggung (bagian
+    tagihan), membayar (ke teman), menerima (dari teman), saldo_akhir.
+    Saldo akhir positif = berhak menerima, negatif = berutang.
+    """
+    from .report import laporan_bulanan
+
+    lap = laporan_bulanan(data, bulan)
+    baris = [["bulan", "anggota", "dibayar", "ditanggung", "membayar",
+              "menerima", "saldo_akhir"]]
+    for nama, r in lap["per_anggota"].items():
+        baris.append([
+            bulan, nama, r["dibayar"], r["ditanggung"], r["membayar"],
+            r["menerima"], lap["saldo_akhir"][nama],
+        ])
+    return _ke_csv(baris)
