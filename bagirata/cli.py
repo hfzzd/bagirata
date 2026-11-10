@@ -13,6 +13,7 @@ import os
 import sys
 
 from . import model
+from . import split as split_mod
 
 
 def _parser():
@@ -46,6 +47,8 @@ def _parser():
     t_tambah.add_argument("--tanggal", default=None,
                           help="Tanggal YYYY-MM-DD (bawaan: hari ini).")
     tagihan_sub.add_parser("daftar", help="Tampilkan semua tagihan.")
+
+    sub.add_parser("saldo", help="Tampilkan saldo tiap anggota.")
     return p
 
 
@@ -86,6 +89,17 @@ def main(argv=None):
                 for i, t in enumerate(tagihan, 1):
                     print(f"{i}. {t['nama']} — {_rupiah(t['jumlah'])} "
                           f"(dibayar {t['pembayar']}, {t['tanggal']})")
+        elif args.perintah == "saldo":
+            saldo = split_mod.hitung_saldo(data)
+            if not saldo:
+                print("Belum ada anggota.")
+            for nama, nilai in saldo.items():
+                if nilai > 0:
+                    print(f"{nama}: berhak menerima {_rupiah(nilai)}")
+                elif nilai < 0:
+                    print(f"{nama}: berutang {_rupiah(-nilai)}")
+                else:
+                    print(f"{nama}: lunas")
         return 0
     except model.BagiRataError as e:
         print(f"Galat: {e}", file=sys.stderr)
