@@ -30,7 +30,9 @@ def hitung_saldo(data, bobot=None):
 
     Saldo positif = anggota sudah membayar lebih dari bagiannya
     (berhak menerima kembali). Saldo negatif = anggota masih berutang.
-    Total semua saldo selalu 0.
+    Total semua saldo selalu 0. Pembayaran yang sudah dicatat ikut
+    diperhitungkan: yang membayar utangnya berkurang, yang menerima
+    hak terimanya berkurang.
 
     `bobot` (opsional): {nama_tagihan: {nama: bobot}} untuk pembagian
     proporsional; bila tidak ada, tagihan dibagi rata.
@@ -45,6 +47,9 @@ def hitung_saldo(data, bobot=None):
         saldo[t["pembayar"]] += t["jumlah"]
         for nama, porsi in bagian.items():
             saldo[nama] -= porsi
+    for p in data["pembayaran"]:
+        saldo[p["dari"]] += p["jumlah"]
+        saldo[p["ke"]] -= p["jumlah"]
     return saldo
 
 

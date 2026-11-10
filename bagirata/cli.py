@@ -49,6 +49,14 @@ def _parser():
     tagihan_sub.add_parser("daftar", help="Tampilkan semua tagihan.")
 
     sub.add_parser("saldo", help="Tampilkan saldo tiap anggota.")
+
+    bayar = sub.add_parser("bayar", help="Catat pembayaran antar anggota.")
+    bayar.add_argument("--dari", required=True, help="Anggota yang membayar.")
+    bayar.add_argument("--ke", required=True, help="Anggota yang menerima.")
+    bayar.add_argument("--jumlah", required=True, type=int,
+                       help="Jumlah pembayaran dalam rupiah.")
+    bayar.add_argument("--tanggal", default=None,
+                       help="Tanggal YYYY-MM-DD (bawaan: hari ini).")
     return p
 
 
@@ -100,6 +108,12 @@ def main(argv=None):
                     print(f"{nama}: berutang {_rupiah(-nilai)}")
                 else:
                     print(f"{nama}: lunas")
+        elif args.perintah == "bayar":
+            p = model.tambah_pembayaran(
+                data, args.dari, args.ke, args.jumlah, args.tanggal)
+            model.simpan(args.data, data)
+            print(f"Pembayaran {_rupiah(p['jumlah'])} dari {p['dari']} "
+                  f"ke {p['ke']} dicatat.")
         return 0
     except model.BagiRataError as e:
         print(f"Galat: {e}", file=sys.stderr)

@@ -113,3 +113,31 @@ def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None):
 def daftar_tagihan(data):
     """Kembalikan daftar tagihan sesuai urutan pencatatan."""
     return list(data["tagihan"])
+
+
+def tambah_pembayaran(data, dari, ke, jumlah, tanggal=None):
+    """Catat pembayaran dari satu anggota ke anggota lain.
+
+    Pembayaran mengurangi utang `dari` dan mengurangi hak terima `ke`.
+    """
+    dari = _nama_bersih(dari)
+    ke = _nama_bersih(ke)
+    _cek_anggota(data, dari)
+    _cek_anggota(data, ke)
+    if dari == ke:
+        raise BagiRataError("Pembayar dan penerima tidak boleh sama.")
+    if jumlah <= 0:
+        raise BagiRataError("Jumlah pembayaran harus lebih dari 0.")
+    pembayaran = {
+        "dari": dari,
+        "ke": ke,
+        "jumlah": jumlah,
+        "tanggal": tanggal or date.today().isoformat(),
+    }
+    data["pembayaran"].append(pembayaran)
+    return pembayaran
+
+
+def daftar_pembayaran(data):
+    """Kembalikan daftar pembayaran sesuai urutan pencatatan."""
+    return list(data["pembayaran"])
