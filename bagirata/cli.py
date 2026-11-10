@@ -14,6 +14,7 @@ import sys
 from datetime import datetime
 
 from . import __version__, model
+from . import export as export_mod
 from . import report as report_mod
 from . import settle as settle_mod
 from . import split as split_mod
@@ -72,6 +73,14 @@ def _parser():
     laporan = sub.add_parser("laporan", help="Tampilkan laporan bulanan.")
     laporan.add_argument("--bulan", default=None,
                          help="Bulan YYYY-MM (bawaan: bulan berjalan).")
+
+    ekspor = sub.add_parser(
+        "ekspor", help="Ekspor data ke CSV (untuk spreadsheet).")
+    ekspor.add_argument("--jenis", required=True,
+                        choices=["tagihan", "pembayaran"],
+                        help="Data yang diekspor.")
+    ekspor.add_argument("--keluar", default=None,
+                        help="File CSV tujuan (bawaan: tampilkan di layar).")
     return p
 
 
@@ -166,6 +175,18 @@ def main(argv=None):
                           else f"berutang {_rupiah(-nilai)}" if nilai < 0
                           else "lunas")
                 print(f"  {nama}: {status}")
+        elif args.perintah == "ekspor":
+            if args.jenis == "tagihan":
+                teks = export_mod.ekspor_csv_tagihan(data)
+            else:
+                teks = export_mod.ekspor_csv_pembayaran(data)
+            if args.keluar:
+                with open(args.keluar, "w", encoding="utf-8",
+                          newline="") as f:
+                    f.write(teks)
+                print(f"Data {args.jenis} diekspor ke {args.keluar}.")
+            else:
+                print(teks, end="")
         return 0
     except model.BagiRataError as e:
         print(f"Galat: {e}", file=sys.stderr)
