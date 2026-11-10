@@ -18,7 +18,7 @@ dan diperiksa manual oleh pengguna:
 
 import json
 import os
-from datetime import date
+from datetime import date, datetime
 
 DEFAULT_DATA_FILE = "bagirata.json"
 
@@ -50,6 +50,16 @@ def simpan(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
     os.replace(tmp, path)
+
+
+def _tanggal_valid(tanggal):
+    """Pastikan tanggal berformat YYYY-MM-DD yang benar-benar ada."""
+    try:
+        datetime.strptime(tanggal, "%Y-%m-%d")
+    except (ValueError, TypeError):
+        raise BagiRataError(
+            f"Tanggal '{tanggal}' tidak valid (pakai format YYYY-MM-DD).")
+    return tanggal
 
 
 def _nama_bersih(nama):
@@ -104,7 +114,7 @@ def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None):
         "pembayar": pembayar,
         "jumlah": jumlah,
         "peserta": peserta,
-        "tanggal": tanggal or date.today().isoformat(),
+        "tanggal": _tanggal_valid(tanggal) if tanggal else date.today().isoformat(),
     }
     data["tagihan"].append(tagihan)
     return tagihan
@@ -145,7 +155,7 @@ def tambah_pembayaran(data, dari, ke, jumlah, tanggal=None):
         "dari": dari,
         "ke": ke,
         "jumlah": jumlah,
-        "tanggal": tanggal or date.today().isoformat(),
+        "tanggal": _tanggal_valid(tanggal) if tanggal else date.today().isoformat(),
     }
     data["pembayaran"].append(pembayaran)
     return pembayaran

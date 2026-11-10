@@ -11,8 +11,9 @@ Contoh pemakaian:
 import argparse
 import os
 import sys
+from datetime import datetime
 
-from . import model
+from . import __version__, model
 from . import report as report_mod
 from . import settle as settle_mod
 from . import split as split_mod
@@ -28,6 +29,8 @@ def _parser():
         default=os.environ.get("BAGIRATA_DATA", model.DEFAULT_DATA_FILE),
         help="File data JSON (bawaan: bagirata.json atau $BAGIRATA_DATA).",
     )
+    p.add_argument("--version", action="version",
+                   version=f"bagirata {__version__}")
     sub = p.add_subparsers(dest="perintah", required=True)
 
     anggota = sub.add_parser("anggota", help="Kelola daftar anggota.")
@@ -143,6 +146,11 @@ def main(argv=None):
         elif args.perintah == "laporan":
             from datetime import date as _date
             bulan = args.bulan or _date.today().strftime("%Y-%m")
+            try:
+                datetime.strptime(bulan, "%Y-%m")
+            except ValueError:
+                raise model.BagiRataError(
+                    f"Bulan '{bulan}' tidak valid (pakai format YYYY-MM).")
             lap = report_mod.laporan_bulanan(data, bulan)
             print(f"Laporan {lap['bulan']}: {lap['jumlah_tagihan']} tagihan, "
                   f"total {_rupiah(lap['total_tagihan'])}, "
