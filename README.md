@@ -68,7 +68,7 @@ Contoh lengkap ada di [`contoh/bagirata-contoh.json`](contoh/bagirata-contoh.jso
 ## Pengembangan
 
 ```bash
-python -m pytest        # jalankan test
+python -m unittest discover -s tests -v   # jalankan test
 ```
 
 ## Lisensi
