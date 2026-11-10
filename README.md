@@ -49,7 +49,10 @@ bagirata saldo
 # 4. Catat pembayaran (Budi membayar Rp100.000 ke Rani)
 bagirata bayar --dari Budi --ke Rani --jumlah 100000
 
-# 5. Laporan bulan berjalan
+# 5. Lihat transfer seminimal mungkin supaya semua lunas
+bagirata lunas
+
+# 6. Laporan bulan berjalan
 bagirata laporan
 ```
 

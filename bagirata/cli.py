@@ -13,6 +13,7 @@ import os
 import sys
 
 from . import model
+from . import settle as settle_mod
 from . import split as split_mod
 
 
@@ -57,6 +58,9 @@ def _parser():
                        help="Jumlah pembayaran dalam rupiah.")
     bayar.add_argument("--tanggal", default=None,
                        help="Tanggal YYYY-MM-DD (bawaan: hari ini).")
+
+    sub.add_parser("lunas",
+                   help="Tampilkan transfer seminimal mungkin supaya lunas.")
     return p
 
 
@@ -114,6 +118,16 @@ def main(argv=None):
             model.simpan(args.data, data)
             print(f"Pembayaran {_rupiah(p['jumlah'])} dari {p['dari']} "
                   f"ke {p['ke']} dicatat.")
+        elif args.perintah == "lunas":
+            saldo = split_mod.hitung_saldo(data)
+            rencana = settle_mod.rencana_pelunasan(saldo)
+            if not rencana:
+                print("Semua sudah lunas — tidak ada transfer yang perlu "
+                      "dilakukan.")
+            else:
+                print("Supaya semua lunas, cukup lakukan transfer ini:")
+                for dari, ke, jumlah in rencana:
+                    print(f"  {dari} -> {ke}: {_rupiah(jumlah)}")
         return 0
     except model.BagiRataError as e:
         print(f"Galat: {e}", file=sys.stderr)
