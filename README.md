@@ -64,6 +64,13 @@ lain dengan `--data` atau variabel lingkungan `BAGIRATA_DATA`.
 `bagirata.json` berisi tiga daftar: `anggota`, `tagihan`, dan `pembayaran`.
 File ini sengaja dibuat mudah dibaca manusia — silakan dibuka dan diperiksa.
 Contoh lengkap ada di [`contoh/bagirata-contoh.json`](contoh/bagirata-contoh.json).
+Coba langsung tanpa membuat data sendiri:
+
+```bash
+bagirata --data contoh/bagirata-contoh.json saldo
+bagirata --data contoh/bagirata-contoh.json lunas
+bagirata --data contoh/bagirata-contoh.json laporan --bulan 2026-11
+```
 
 ## Pengembangan
 

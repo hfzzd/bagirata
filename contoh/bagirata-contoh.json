@@ -1,0 +1,50 @@
+{
+  "anggota": [
+    "Rani",
+    "Budi",
+    "Sinta"
+  ],
+  "pembayaran": [
+    {
+      "dari": "Budi",
+      "jumlah": 50000,
+      "ke": "Rani",
+      "tanggal": "2026-11-09"
+    }
+  ],
+  "tagihan": [
+    {
+      "jumlah": 300000,
+      "nama": "Listrik November",
+      "pembayar": "Rani",
+      "peserta": [
+        "Rani",
+        "Budi",
+        "Sinta"
+      ],
+      "tanggal": "2026-11-03"
+    },
+    {
+      "jumlah": 150000,
+      "nama": "WiFi November",
+      "pembayar": "Budi",
+      "peserta": [
+        "Rani",
+        "Budi",
+        "Sinta"
+      ],
+      "tanggal": "2026-11-05"
+    },
+    {
+      "jumlah": 60000,
+      "nama": "Air galon",
+      "pembayar": "Sinta",
+      "peserta": [
+        "Rani",
+        "Budi",
+        "Sinta"
+      ],
+      "tanggal": "2026-11-08"
+    }
+  ]
+}
