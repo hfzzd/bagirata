@@ -49,6 +49,9 @@ def _parser():
     t_tambah.add_argument("--tanggal", default=None,
                           help="Tanggal YYYY-MM-DD (bawaan: hari ini).")
     tagihan_sub.add_parser("daftar", help="Tampilkan semua tagihan.")
+    t_hapus = tagihan_sub.add_parser("hapus", help="Hapus satu tagihan.")
+    t_hapus.add_argument("nomor", type=int,
+                         help="Nomor tagihan dari 'tagihan daftar'.")
 
     sub.add_parser("saldo", help="Tampilkan saldo tiap anggota.")
 
@@ -99,6 +102,10 @@ def main(argv=None):
                 print(f"Tagihan '{t['nama']}' {_rupiah(t['jumlah'])} dicatat, "
                       f"dibayar {t['pembayar']} untuk "
                       f"{len(t['peserta'])} peserta.")
+            elif args.aksi == "hapus":
+                t = model.hapus_tagihan(data, args.nomor)
+                model.simpan(args.data, data)
+                print(f"Tagihan '{t['nama']}' {_rupiah(t['jumlah'])} dihapus.")
             else:
                 tagihan = model.daftar_tagihan(data)
                 if not tagihan:

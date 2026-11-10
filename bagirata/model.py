@@ -115,6 +115,19 @@ def daftar_tagihan(data):
     return list(data["tagihan"])
 
 
+def hapus_tagihan(data, nomor):
+    """Hapus tagihan berdasarkan nomor urut (1-based, sesuai `tagihan daftar`).
+
+    Mengembalikan tagihan yang dihapus. Pembayaran tidak merujuk ke
+    tagihan, jadi menghapus tagihan tidak merusak riwayat pembayaran.
+    """
+    if nomor < 1 or nomor > len(data["tagihan"]):
+        raise BagiRataError(
+            f"Tidak ada tagihan nomor {nomor} "
+            f"(ada {len(data['tagihan'])} tagihan).")
+    return data["tagihan"].pop(nomor - 1)
+
+
 def tambah_pembayaran(data, dari, ke, jumlah, tanggal=None):
     """Catat pembayaran dari satu anggota ke anggota lain.
 
