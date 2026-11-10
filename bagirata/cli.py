@@ -13,6 +13,7 @@ import os
 import sys
 
 from . import model
+from . import report as report_mod
 from . import settle as settle_mod
 from . import split as split_mod
 
@@ -61,6 +62,10 @@ def _parser():
 
     sub.add_parser("lunas",
                    help="Tampilkan transfer seminimal mungkin supaya lunas.")
+
+    laporan = sub.add_parser("laporan", help="Tampilkan laporan bulanan.")
+    laporan.add_argument("--bulan", default=None,
+                         help="Bulan YYYY-MM (bawaan: bulan berjalan).")
     return p
 
 
@@ -128,6 +133,24 @@ def main(argv=None):
                 print("Supaya semua lunas, cukup lakukan transfer ini:")
                 for dari, ke, jumlah in rencana:
                     print(f"  {dari} -> {ke}: {_rupiah(jumlah)}")
+        elif args.perintah == "laporan":
+            from datetime import date as _date
+            bulan = args.bulan or _date.today().strftime("%Y-%m")
+            lap = report_mod.laporan_bulanan(data, bulan)
+            print(f"Laporan {lap['bulan']}: {lap['jumlah_tagihan']} tagihan, "
+                  f"total {_rupiah(lap['total_tagihan'])}, "
+                  f"{lap['jumlah_pembayaran']} pembayaran.")
+            for nama, r in lap["per_anggota"].items():
+                print(f"  {nama}: membayar tagihan {_rupiah(r['dibayar'])}, "
+                      f"menanggung {_rupiah(r['ditanggung'])}, "
+                      f"membayar ke teman {_rupiah(r['membayar'])}, "
+                      f"menerima {_rupiah(r['menerima'])}")
+            print("Saldo akhir:")
+            for nama, nilai in lap["saldo_akhir"].items():
+                status = (f"berhak menerima {_rupiah(nilai)}" if nilai > 0
+                          else f"berutang {_rupiah(-nilai)}" if nilai < 0
+                          else "lunas")
+                print(f"  {nama}: {status}")
         return 0
     except model.BagiRataError as e:
         print(f"Galat: {e}", file=sys.stderr)
