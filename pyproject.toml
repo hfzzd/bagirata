@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bagirata"
+version = "0.1.0"
+description = "Pembagi tagihan untuk anak kos & teman serumah"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Hafizd Ammar" }]
+
+[project.scripts]
+bagirata = "bagirata.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bagirata*"]
