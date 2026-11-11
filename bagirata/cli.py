@@ -255,6 +255,11 @@ def main(argv=None):
             else:
                 print(teks, end="")
         elif args.perintah == "pengingat":
+            if args.dalam < 0:
+                raise model.BagiRataError(
+                    "--dalam tidak boleh negatif; pakai 0 atau lebih, "
+                    "mis. --dalam 7 untuk mengingatkan tagihan yang "
+                    "jatuh tempo seminggu ke depan.")
             daftar = pengingat_mod.daftar_pengingat(data,
                                                     ambang_hari=args.dalam)
             if not daftar:

@@ -60,6 +60,14 @@ class TestCLI(unittest.TestCase):
                              "--peserta", "Rani")
         self.assertEqual(kode, 1)
 
+    def test_pengingat_dalam_negatif_ditolak(self):
+        # --dalam negatif tidak masuk akal; ditolak ramah dengan kode 1.
+        kode, _ = self.jalan("pengingat", "--dalam", "-1")
+        self.assertEqual(kode, 1)
+        kode, out = self.jalan("pengingat", "--dalam", "0")
+        self.assertEqual(kode, 0)
+        self.assertIn("Aman", out)
+
     def test_hapus_tagihan_lewat_cli(self):
         self.jalan("anggota", "tambah", "Rani")
         self.jalan("tagihan", "tambah", "--nama", "A", "--pembayar", "Rani",
