@@ -62,6 +62,12 @@ def _parser():
                                "'bulanan'); bisa diperpanjang ke bulan "
                                "berikutnya dengan 'tagihan perpanjang'.")
     tagihan_sub.add_parser("daftar", help="Tampilkan semua tagihan.")
+    t_perpanjang = tagihan_sub.add_parser(
+        "perpanjang",
+        help="Salin tagihan berulang bulan lalu ke bulan berjalan.")
+    t_perpanjang.add_argument("--bulan", default=None,
+                              help="Bulan tujuan YYYY-MM "
+                                   "(bawaan: bulan berjalan).")
     t_hapus = tagihan_sub.add_parser("hapus", help="Hapus satu tagihan.")
     t_hapus.add_argument("nomor", type=int,
                          help="Nomor tagihan dari 'tagihan daftar'.")
@@ -143,6 +149,23 @@ def main(argv=None):
                 t = model.hapus_tagihan(data, args.nomor)
                 model.simpan(args.data, data)
                 print(f"Tagihan '{t['nama']}' {_rupiah(t['jumlah'])} dihapus.")
+            elif args.aksi == "perpanjang":
+                from datetime import date as _date
+                bulan = args.bulan or _date.today().strftime("%Y-%m")
+                baru = model.perpanjang_tagihan_berulang(data, bulan)
+                model.simpan(args.data, data)
+                if not baru:
+                    print(f"Tidak ada tagihan berulang yang perlu "
+                          f"diperpanjang ke {bulan}.")
+                else:
+                    print(f"{len(baru)} tagihan berulang diperpanjang "
+                          f"ke {bulan}:")
+                    for t in baru:
+                        baris = (f"  {t['nama']} — {_rupiah(t['jumlah'])} "
+                                 f"({t['tanggal']})")
+                        if t.get("jatuh_tempo"):
+                            baris += f", jatuh tempo {t['jatuh_tempo']}"
+                        print(baris)
             else:
                 tagihan = model.daftar_tagihan(data)
                 if not tagihan:

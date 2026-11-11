@@ -16,6 +16,7 @@ dan diperiksa manual oleh pengguna:
     }
 """
 
+import calendar
 import json
 import os
 from datetime import date, datetime
@@ -137,6 +138,69 @@ def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None,
 def daftar_tagihan(data):
     """Kembalikan daftar tagihan sesuai urutan pencatatan."""
     return list(data["tagihan"])
+
+
+def _geser_sebulan(tanggal):
+    """Geser tanggal satu bulan ke depan.
+
+    Tanggal 31 yang tidak ada di bulan tujuan dijepit ke hari terakhir
+    bulan itu (mis. 31 Jan -> 28 Feb).
+    """
+    d = datetime.strptime(tanggal, "%Y-%m-%d").date()
+    tahun, bulan = (d.year + 1, 1) if d.month == 12 else (d.year, d.month + 1)
+    hari = min(d.day, calendar.monthrange(tahun, bulan)[1])
+    return date(tahun, bulan, hari).isoformat()
+
+
+def perpanjang_tagihan_berulang(data, bulan=None):
+    """Salin tagihan berulang bulanan dari bulan lalu ke `bulan`.
+
+    `bulan` berformat YYYY-MM (bawaan: bulan berjalan). Setiap tagihan
+    dengan `berulang: "bulanan"` yang tanggalnya ada di bulan sebelum
+    `bulan` disalin dengan tanggal baru (digeser sebulan) dan jatuh
+    tempo baru (ikut digeser sebulan bila ada). Tagihan yang sudah
+    pernah diperpanjang ke bulan itu dilewati — tidak diduplikasi.
+
+    Mengembalikan daftar tagihan baru yang dibuat.
+    """
+    bulan = bulan or date.today().strftime("%Y-%m")
+    try:
+        datetime.strptime(bulan, "%Y-%m")
+    except ValueError:
+        raise BagiRataError(
+            f"Bulan '{bulan}' tidak valid (pakai format YYYY-MM).")
+    tahun, bln = map(int, bulan.split("-"))
+    sumber = f"{tahun - 1:04d}-12" if bln == 1 else f"{tahun:04d}-{bln - 1:02d}"
+    baru = []
+    for t in list(data["tagihan"]):
+        if t.get("berulang") != "bulanan":
+            continue
+        if not t["tanggal"].startswith(sumber):
+            continue
+        tanggal_baru = _geser_sebulan(t["tanggal"])
+        if not tanggal_baru.startswith(bulan):
+            continue
+        sudah_ada = any(
+            u["nama"] == t["nama"] and u["pembayar"] == t["pembayar"]
+            and u["jumlah"] == t["jumlah"]
+            and u["tanggal"] == tanggal_baru
+            for u in data["tagihan"]
+        )
+        if sudah_ada:
+            continue
+        salinan = {
+            "nama": t["nama"],
+            "pembayar": t["pembayar"],
+            "jumlah": t["jumlah"],
+            "peserta": list(t["peserta"]),
+            "tanggal": tanggal_baru,
+            "berulang": "bulanan",
+        }
+        if t.get("jatuh_tempo"):
+            salinan["jatuh_tempo"] = _geser_sebulan(t["jatuh_tempo"])
+        data["tagihan"].append(salinan)
+        baru.append(salinan)
+    return baru
 
 
 def hapus_tagihan(data, nomor):
