@@ -105,5 +105,35 @@ class TestEksporLaporan(unittest.TestCase):
         self.assertEqual(per_anggota["Rani"][6], "140000")
 
 
+class TestEksporLunas(unittest.TestCase):
+    def test_header_dan_isi_benar(self):
+        # Saldo akhir data_contoh: Rani +140rb, Budi +30rb,
+        # Sinta -170rb. Rencana minimal: Sinta -> Rani 140rb,
+        # Sinta -> Budi 30rb (2 transfer, bukan 3).
+        baris = baca_csv(export_mod.ekspor_csv_lunas(data_contoh()))
+        self.assertEqual(baris[0], ["nomor", "dari", "ke", "jumlah"])
+        self.assertEqual(baris[1], ["1", "Sinta", "Rani", "140000"])
+        self.assertEqual(baris[2], ["2", "Sinta", "Budi", "30000"])
+        self.assertEqual(len(baris), 3)
+
+    def test_semua_lunas_hanya_header(self):
+        data = model.data_kosong()
+        model.tambah_anggota(data, "Rani")
+        baris = baca_csv(export_mod.ekspor_csv_lunas(data))
+        self.assertEqual(len(baris), 1)
+        self.assertEqual(baris[0], ["nomor", "dari", "ke", "jumlah"])
+
+    def test_setelah_dibayar_tinggal_sisa(self):
+        # Sinta bayar 100rb ke Rani -> sisa: Sinta -> Rani 40rb,
+        # Sinta -> Budi 30rb.
+        data = data_contoh()
+        model.tambah_pembayaran(data, "Sinta", "Rani", 100000,
+                                "2026-11-12")
+        baris = baca_csv(export_mod.ekspor_csv_lunas(data))
+        self.assertEqual(baris[1], ["1", "Sinta", "Rani", "40000"])
+        self.assertEqual(baris[2], ["2", "Sinta", "Budi", "30000"])
+        self.assertEqual(len(baris), 3)
+
+
 if __name__ == "__main__":
     unittest.main()

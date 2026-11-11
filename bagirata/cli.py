@@ -92,8 +92,10 @@ def _parser():
     ekspor = sub.add_parser(
         "ekspor", help="Ekspor data ke CSV (untuk spreadsheet).")
     ekspor.add_argument("--jenis", required=True,
-                        choices=["tagihan", "pembayaran", "laporan"],
-                        help="Data yang diekspor.")
+                        choices=["tagihan", "pembayaran", "laporan",
+                                 "lunas"],
+                        help="Data yang diekspor (lunas = rencana "
+                             "pelunasan: transfer seminimal mungkin).")
     ekspor.add_argument("--keluar", default=None,
                         help="File CSV tujuan (bawaan: tampilkan di layar).")
     ekspor.add_argument("--bulan", default=None,
@@ -233,6 +235,8 @@ def main(argv=None):
                 teks = export_mod.ekspor_csv_tagihan(data)
             elif args.jenis == "pembayaran":
                 teks = export_mod.ekspor_csv_pembayaran(data)
+            elif args.jenis == "lunas":
+                teks = export_mod.ekspor_csv_lunas(data)
             else:
                 from datetime import date as _date
                 bulan = args.bulan or _date.today().strftime("%Y-%m")

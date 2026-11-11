@@ -7,6 +7,7 @@ atau dibagikan ke teman serumah yang tidak memakai CLI.
 Kolom tagihan: nomor, nama, pembayar, jumlah, tanggal, peserta.
 Peserta digabung dengan ";" agar tetap satu kolom.
 Kolom pembayaran: nomor, dari, ke, jumlah, tanggal.
+Kolom rencana pelunasan (lunas): nomor, dari, ke, jumlah.
 """
 
 import csv
@@ -29,6 +30,22 @@ def ekspor_csv_tagihan(data):
             i, t["nama"], t["pembayar"], t["jumlah"], t["tanggal"],
             ";".join(t["peserta"]),
         ])
+    return _ke_csv(baris)
+
+
+def ekspor_csv_lunas(data):
+    """Kembalikan teks CSV berisi rencana pelunasan (transfer minimal).
+
+    Kolom: nomor, dari, ke, jumlah. Bila semua sudah lunas, hanya
+    header yang dihasilkan — tidak ada transfer yang perlu dicatat.
+    """
+    from .settle import rencana_pelunasan
+    from .split import hitung_saldo
+
+    rencana = rencana_pelunasan(hitung_saldo(data))
+    baris = [["nomor", "dari", "ke", "jumlah"]]
+    for i, (dari, ke, jumlah) in enumerate(rencana, 1):
+        baris.append([i, dari, ke, jumlah])
     return _ke_csv(baris)
 
 
