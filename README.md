@@ -23,6 +23,14 @@ dengan transfer sesedikit mungkin.
 - **Pembayaran & settlement** — catat pembayaran antar anggota; BagiRata menghitung
   transfer seminimal mungkin supaya semua lunas.
 - **Laporan bulanan** — ringkasan tagihan & saldo tiap anggota per bulan.
+- **Jatuh tempo & pengingat** — tagihan bisa diberi batas bayar; perintah
+  `pengingat` menampilkan yang terlambat, jatuh hari ini, atau jatuh dalam
+  N hari ke depan (bawaan 7 hari).
+- **Tagihan berulang** — tagihan bulanan (mis. WiFi) ditandai `--berulang
+  bulanan` lalu disalin ke bulan berjalan dengan `tagihan perpanjang`.
+- **Ekspor CSV** — ekspor tagihan, pembayaran, laporan bulanan, dan rencana
+  pelunasan (`lunas`) ke CSV, siap dibuka di spreadsheet atau dibagikan ke
+  teman serumah yang tidak memakai CLI.
 - **Data lokal** — semua tersimpan di satu file JSON (`bagirata.json`) di komputermu.
   Tidak ada server, tidak ada akun, tidak ada data yang keluar.
 
@@ -54,14 +62,52 @@ bagirata lunas
 
 # 6. Laporan bulan berjalan
 bagirata laporan
+
+# 7. Tagihan berulang dengan jatuh tempo, lalu cek pengingat
+bagirata tagihan tambah --nama "WiFi" --pembayar Budi --jumlah 150000 \
+    --peserta Rani Budi Sinta --jatuh-tempo 2026-11-10 --berulang bulanan
+bagirata pengingat             # jatuh tempo ≤ 7 hari lagi (bawaan)
+bagirata pengingat --dalam 1   # hanya yang jatuh besok / hari ini / terlambat
+
+# 8. Perpanjang tagihan berulang ke bulan berjalan
+bagirata tagihan perpanjang --bulan 2026-12
+
+# 9. Ekspor ke CSV (buka di spreadsheet)
+bagirata ekspor --jenis tagihan --keluar tagihan.csv
+bagirata ekspor --jenis lunas
 ```
 
 Jalankan `bagirata --help` untuk daftar perintah lengkap. Data bisa dipindah ke file
 lain dengan `--data` atau variabel lingkungan `BAGIRATA_DATA`.
 
+## Contoh ekspor CSV
+
+Jenis yang tersedia: `tagihan`, `pembayaran`, `laporan` (tambah `--bulan`),
+dan `lunas` (rencana pelunasan: transfer seminimal mungkin supaya semua
+lunas). Tanpa `--keluar`, hasil CSV tampil di layar.
+
+`bagirata --data contoh/bagirata-contoh.json ekspor --jenis lunas`:
+
+```csv
+nomor,dari,ke,jumlah
+1,Sinta,Rani,80000
+2,Sinta,Budi,30000
+```
+
+`bagirata --data contoh/bagirata-contoh.json ekspor --jenis tagihan`:
+
+```csv
+nomor,nama,pembayar,jumlah,tanggal,peserta
+1,Listrik November,Rani,300000,2026-11-03,Rani;Budi;Sinta
+2,WiFi November,Budi,150000,2026-11-05,Rani;Budi;Sinta
+3,Air galon,Sinta,60000,2026-11-08,Rani;Budi;Sinta
+```
+
 ## Format data
 
 `bagirata.json` berisi tiga daftar: `anggota`, `tagihan`, dan `pembayaran`.
+Tagihan bisa punya field opsional `jatuh_tempo` (YYYY-MM-DD) dan `berulang`
+(`"bulanan"`).
 File ini sengaja dibuat mudah dibaca manusia — silakan dibuka dan diperiksa.
 Contoh lengkap ada di [`contoh/bagirata-contoh.json`](contoh/bagirata-contoh.json).
 Coba langsung tanpa membuat data sendiri:
