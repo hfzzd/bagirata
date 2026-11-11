@@ -91,11 +91,14 @@ def _cek_anggota(data, nama):
         )
 
 
-def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None):
+def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None,
+                   jatuh_tempo=None):
     """Catat satu tagihan bersama.
 
     `pembayar` adalah anggota yang membayar dulu (nombok); `peserta` adalah
     anggota yang ikut menanggung tagihan ini (pembayar boleh termasuk).
+    `jatuh_tempo` (opsional, YYYY-MM-DD) adalah batas waktu tagihan
+    dibayar — dipakai perintah `pengingat` untuk mengingatkan.
     """
     nama = _nama_bersih(nama)
     pembayar = _nama_bersih(pembayar)
@@ -116,6 +119,8 @@ def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None):
         "peserta": peserta,
         "tanggal": _tanggal_valid(tanggal) if tanggal else date.today().isoformat(),
     }
+    if jatuh_tempo:
+        tagihan["jatuh_tempo"] = _tanggal_valid(jatuh_tempo)
     data["tagihan"].append(tagihan)
     return tagihan
 

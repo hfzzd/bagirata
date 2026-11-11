@@ -52,6 +52,9 @@ def _parser():
                           help="Anggota yang ikut menanggung.")
     t_tambah.add_argument("--tanggal", default=None,
                           help="Tanggal YYYY-MM-DD (bawaan: hari ini).")
+    t_tambah.add_argument("--jatuh-tempo", default=None,
+                          help="Batas bayar YYYY-MM-DD (opsional, untuk "
+                               "pengingat).")
     tagihan_sub.add_parser("daftar", help="Tampilkan semua tagihan.")
     t_hapus = tagihan_sub.add_parser("hapus", help="Hapus satu tagihan.")
     t_hapus.add_argument("nomor", type=int,
@@ -111,12 +114,15 @@ def main(argv=None):
             if args.aksi == "tambah":
                 t = model.tambah_tagihan(
                     data, args.nama, args.pembayar, args.jumlah,
-                    args.peserta, args.tanggal,
+                    args.peserta, args.tanggal, args.jatuh_tempo,
                 )
                 model.simpan(args.data, data)
-                print(f"Tagihan '{t['nama']}' {_rupiah(t['jumlah'])} dicatat, "
-                      f"dibayar {t['pembayar']} untuk "
-                      f"{len(t['peserta'])} peserta.")
+                pesan = (f"Tagihan '{t['nama']}' {_rupiah(t['jumlah'])} "
+                         f"dicatat, dibayar {t['pembayar']} untuk "
+                         f"{len(t['peserta'])} peserta.")
+                if t.get("jatuh_tempo"):
+                    pesan += f" Jatuh tempo {t['jatuh_tempo']}."
+                print(pesan)
             elif args.aksi == "hapus":
                 t = model.hapus_tagihan(data, args.nomor)
                 model.simpan(args.data, data)
@@ -126,8 +132,11 @@ def main(argv=None):
                 if not tagihan:
                     print("Belum ada tagihan.")
                 for i, t in enumerate(tagihan, 1):
-                    print(f"{i}. {t['nama']} — {_rupiah(t['jumlah'])} "
-                          f"(dibayar {t['pembayar']}, {t['tanggal']})")
+                    baris = (f"{i}. {t['nama']} — {_rupiah(t['jumlah'])} "
+                             f"(dibayar {t['pembayar']}, {t['tanggal']})")
+                    if t.get("jatuh_tempo"):
+                        baris += f" — jatuh tempo {t['jatuh_tempo']}"
+                    print(baris)
         elif args.perintah == "saldo":
             saldo = split_mod.hitung_saldo(data)
             if not saldo:
