@@ -15,6 +15,7 @@ from datetime import datetime
 
 from . import __version__, model
 from . import export as export_mod
+from . import pengingat as pengingat_mod
 from . import report as report_mod
 from . import settle as settle_mod
 from . import split as split_mod
@@ -87,6 +88,13 @@ def _parser():
     ekspor.add_argument("--bulan", default=None,
                         help="Bulan YYYY-MM untuk jenis laporan "
                              "(bawaan: bulan berjalan).")
+
+    pengingat = sub.add_parser(
+        "pengingat", help="Ingatkan tagihan yang jatuh tempo.")
+    pengingat.add_argument("--dalam", default=7, type=int,
+                           help="Ingatkan tagihan yang jatuh dalam N hari "
+                                "ke depan (bawaan: 7). Tagihan terlambat "
+                                "selalu diingatkan.")
     return p
 
 
@@ -209,6 +217,23 @@ def main(argv=None):
                 print(f"Data {args.jenis} diekspor ke {args.keluar}.")
             else:
                 print(teks, end="")
+        elif args.perintah == "pengingat":
+            daftar = pengingat_mod.daftar_pengingat(data,
+                                                    ambang_hari=args.dalam)
+            if not daftar:
+                print("Tidak ada tagihan yang jatuh tempo dalam "
+                      f"{args.dalam} hari ke depan. Aman.")
+            else:
+                for p in daftar:
+                    if p["sisa_hari"] < 0:
+                        kapan = f"terlambat {-p['sisa_hari']} hari"
+                    elif p["sisa_hari"] == 0:
+                        kapan = "jatuh hari ini"
+                    else:
+                        kapan = f"{p['sisa_hari']} hari lagi"
+                    print(f"[{p['status']}] {p['nama']} — "
+                          f"{_rupiah(p['jumlah'])} (dibayar {p['pembayar']}, "
+                          f"jatuh tempo {p['jatuh_tempo']}, {kapan})")
         return 0
     except model.BagiRataError as e:
         print(f"Galat: {e}", file=sys.stderr)
