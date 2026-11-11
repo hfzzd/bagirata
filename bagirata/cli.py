@@ -56,6 +56,11 @@ def _parser():
     t_tambah.add_argument("--jatuh-tempo", default=None,
                           help="Batas bayar YYYY-MM-DD (opsional, untuk "
                                "pengingat).")
+    t_tambah.add_argument("--berulang", default=None,
+                          choices=["bulanan"],
+                          help="Tandai tagihan berulang (saat ini hanya "
+                               "'bulanan'); bisa diperpanjang ke bulan "
+                               "berikutnya dengan 'tagihan perpanjang'.")
     tagihan_sub.add_parser("daftar", help="Tampilkan semua tagihan.")
     t_hapus = tagihan_sub.add_parser("hapus", help="Hapus satu tagihan.")
     t_hapus.add_argument("nomor", type=int,
@@ -123,6 +128,7 @@ def main(argv=None):
                 t = model.tambah_tagihan(
                     data, args.nama, args.pembayar, args.jumlah,
                     args.peserta, args.tanggal, args.jatuh_tempo,
+                    args.berulang,
                 )
                 model.simpan(args.data, data)
                 pesan = (f"Tagihan '{t['nama']}' {_rupiah(t['jumlah'])} "
@@ -130,6 +136,8 @@ def main(argv=None):
                          f"{len(t['peserta'])} peserta.")
                 if t.get("jatuh_tempo"):
                     pesan += f" Jatuh tempo {t['jatuh_tempo']}."
+                if t.get("berulang"):
+                    pesan += " Berulang bulanan."
                 print(pesan)
             elif args.aksi == "hapus":
                 t = model.hapus_tagihan(data, args.nomor)
@@ -144,6 +152,8 @@ def main(argv=None):
                              f"(dibayar {t['pembayar']}, {t['tanggal']})")
                     if t.get("jatuh_tempo"):
                         baris += f" — jatuh tempo {t['jatuh_tempo']}"
+                    if t.get("berulang"):
+                        baris += f" — berulang {t['berulang']}"
                     print(baris)
         elif args.perintah == "saldo":
             saldo = split_mod.hitung_saldo(data)

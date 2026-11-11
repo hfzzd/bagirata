@@ -92,13 +92,16 @@ def _cek_anggota(data, nama):
 
 
 def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None,
-                   jatuh_tempo=None):
+                   jatuh_tempo=None, berulang=None):
     """Catat satu tagihan bersama.
 
     `pembayar` adalah anggota yang membayar dulu (nombok); `peserta` adalah
     anggota yang ikut menanggung tagihan ini (pembayar boleh termasuk).
     `jatuh_tempo` (opsional, YYYY-MM-DD) adalah batas waktu tagihan
     dibayar — dipakai perintah `pengingat` untuk mengingatkan.
+    `berulang` (opsional) menandai tagihan yang terulang tiap periode;
+    saat ini hanya "bulanan" yang didukung — dipakai perintah
+    `tagihan perpanjang` untuk menyalinnya ke bulan berikutnya.
     """
     nama = _nama_bersih(nama)
     pembayar = _nama_bersih(pembayar)
@@ -121,6 +124,12 @@ def tambah_tagihan(data, nama, pembayar, jumlah, peserta, tanggal=None,
     }
     if jatuh_tempo:
         tagihan["jatuh_tempo"] = _tanggal_valid(jatuh_tempo)
+    if berulang:
+        if berulang != "bulanan":
+            raise BagiRataError(
+                f"Nilai berulang '{berulang}' tidak didukung "
+                "(saat ini hanya 'bulanan').")
+        tagihan["berulang"] = berulang
     data["tagihan"].append(tagihan)
     return tagihan
 
